@@ -18,6 +18,20 @@ jobs:
           rm -rf "$GITHUB_WORKSPACE/prompt_maharaja"
           mv /tmp/app/* "$GITHUB_WORKSPACE"
           ls "$GITHUB_WORKSPACE"
+      - name: Fix Dart syntax
+        run: |
+          cd "$GITHUB_WORKSPACE/prompt_maharaja"
+          python3 << 'PYEOF'
+          p = 'lib/data/prompts.dart'
+          s = open(p, encoding='utf-8').read()
+          s = s.replace("this.neg = '''", "this.neg = ''")
+          open(p, 'w', encoding='utf-8').write(s)
+          p = 'lib/screens/more.dart'
+          s = open(p, encoding='utf-8').read()
+          s = s.replace("'CURATED\nPROMPTS'", "'CURATED\\nPROMPTS'")
+          open(p, 'w', encoding='utf-8').write(s)
+          print('dart fixed ok')
+          PYEOF
       - name: Fix Android config
         run: |
           cd "$GITHUB_WORKSPACE/prompt_maharaja"
