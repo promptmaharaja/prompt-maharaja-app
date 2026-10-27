@@ -21,6 +21,7 @@ jobs:
       - name: Fix Dart syntax
         run: |
           cd "$GITHUB_WORKSPACE/prompt_maharaja"
+                    sed -i "/Surprise me/a\        )," lib/screens/generate.dart
           python3 << 'PYEOF'
           p = 'lib/data/prompts.dart'
           s = open(p, encoding='utf-8').read()
@@ -31,13 +32,6 @@ jobs:
           s = open(p, encoding='utf-8').read()
           s = s.replace("'CURATED\nPROMPTS'", "'CURATED\\nPROMPTS'")
           open(p, 'w', encoding='utf-8').write(s)
-          lib/screens/generate.dart'
-          a = open(p, encoding='utf-8').read().split(chr(10))
-          for i in range(len(a)):
-              if 'Surprise me' in a[i]:
-                  a.insert(i+1, '        ),')
-                  break
-          open(p, 'w', encoding='utf-8'
           print('dart fixed ok')
           PYEOF
       - name: Fix Android config
