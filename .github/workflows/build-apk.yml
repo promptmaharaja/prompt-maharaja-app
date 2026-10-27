@@ -20,9 +20,10 @@ jobs:
           cd "$GITHUB_WORKSPACE/prompt_maharaja"
           printf 'org.gradle.jvmargs=-Xmx4G\nandroid.useAndroidX=true\nandroid.enableJetifier=true\n' > android/gradle.properties
           sed -i 's/ndkVersion = flutter.ndkVersion/ndkVersion = "25.1.8937393"/' android/app/build.gradle
-          echo "--- gradle.properties ---"
-          cat android/gradle.properties
-          grep ndkVersion android/app/build.gradle
+          mkdir -p android/app/src/main/res/values
+          printf '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">\n        <item name="android:windowBackground">@android:color/black</item>\n    </style>\n    <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">\n        <item name="android:windowBackground">@android:color/black</item>\n    </style>\n</resources>\n' > android/app/src/main/res/values/styles.xml
+          sed -i 's/ *android:icon="@mipmap\/ic_launcher"//' android/app/src/main/AndroidManifest.xml
+          echo "ALL FIXES APPLIED"
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
