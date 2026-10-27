@@ -31,13 +31,13 @@ jobs:
           s = open(p, encoding='utf-8').read()
           s = s.replace("'CURATED\nPROMPTS'", "'CURATED\\nPROMPTS'")
           open(p, 'w', encoding='utf-8').write(s)
-          p = 'lib/screens/generate.dart'
-          s = open(p, encoding='utf-8').read()
-          s = s.replace("fontWeight: FontWeight.w600))])),
-                ]),", "fontWeight: FontWeight.w600))])),
-                  ),
-                ]),")
-          open(p, 'w', encoding='utf-8').write(s)
+                    p = 'lib/screens/generate.dart'
+          a = open(p, encoding='utf-8').read().split(chr(10))
+          for i in range(len(a)):
+              if 'Surprise me' in a[i]:
+                  a.insert(i+1, '        ),')
+                  break
+          open(p, 'w', encoding='utf-8').write(chr(10).join(a))
           print('dart fixed ok')
           PYEOF
       - name: Fix Android config
