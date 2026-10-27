@@ -1,0 +1,43 @@
+name: Build APK
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unzip project
+        run: |
+          ZIP=$(ls prompt-maharaja-app*.zip | head -n 1)
+          echo "Unzipping: $ZIP"
+          rm -rf /tmp/app && mkdir -p /tmp/app
+          unzip -o "$ZIP" -d /tmp/app
+          cp -r /tmp/app/prompt_maharaja/. "$GITHUB_WORKSPACE"/
+          rm -f "$ZIP"
+          ls "$GITHUB_WORKSPACE"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 17
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.24.5
+          channel: stable
+          cache: true
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --debug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PromptMaharaja-APK
+          path: build/app/outputs/flutter-apk/app-debug.apk
