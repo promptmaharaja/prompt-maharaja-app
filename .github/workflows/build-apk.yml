@@ -31,6 +31,13 @@ jobs:
           s = open(p, encoding='utf-8').read()
           s = s.replace("'CURATED\nPROMPTS'", "'CURATED\\nPROMPTS'")
           open(p, 'w', encoding='utf-8').write(s)
+                    p = 'lib/screens/generate.dart'
+          s = open(p, encoding='utf-8').read()
+          s = s.replace("fontWeight: FontWeight.w600))])),
+                ]),", "fontWeight: FontWeight.w600))])),
+                  ),
+                ]),")
+          open(p, 'w', encoding='utf-8').write(s)
           print('dart fixed ok')
           PYEOF
       - name: Fix Android config
