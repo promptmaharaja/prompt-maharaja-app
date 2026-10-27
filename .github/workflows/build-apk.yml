@@ -25,6 +25,7 @@ jobs:
           p = 'lib/data/prompts.dart'
           s = open(p, encoding='utf-8').read()
           s = s.replace("this.neg = '''", "this.neg = ''")
+          s = s.replace('""', '"')
           open(p, 'w', encoding='utf-8').write(s)
           p = 'lib/screens/more.dart'
           s = open(p, encoding='utf-8').read()
