@@ -1,0 +1,73 @@
+name: Build APK
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Unzip project
+        run: |
+          ZIP=$(find . -maxdepth 1 -iname "promptmaharaja*v5*.zip" | head -1)
+          if [ -z "$ZIP" ]; then ZIP=$(find . -maxdepth 1 -iname "prompt*.zip" | head -1); fi
+          echo "Found zip: $ZIP"
+          rm -rf /tmp/app && mkdir -p /tmp/app
+          unzip -o "$ZIP" -d /tmp/app
+          # Handle both: zip with prompt_maharaja folder or direct lib/android
+          if [ -d "/tmp/app/prompt_maharaja" ]; then
+            rm -rf "$GITHUB_WORKSPACE/prompt_maharaja"
+            mv /tmp/app/prompt_maharaja "$GITHUB_WORKSPACE/prompt_maharaja"
+          else
+            mkdir -p "$GITHUB_WORKSPACE/prompt_maharaja"
+            cp -r /tmp/app/* "$GITHUB_WORKSPACE/prompt_maharaja/"
+          fi
+          ls "$GITHUB_WORKSPACE/prompt_maharaja"
+      - name: Fix Dart syntax
+        run: |
+          cd "$GITHUB_WORKSPACE/prompt_maharaja"
+          python3 << 'PYEOF'
+          import glob, os
+          # prompts.dart (case-insensitive)
+          for p in glob.glob('lib/data/[Pp]rompts.dart'):
+              s = open(p, encoding='utf-8').read()
+              s = s.replace("this.neg = '''", "this.neg = ''")
+              s = s.replace('""', '"')
+              open(p, 'w', encoding='utf-8').write(s)
+          for p in glob.glob('lib/screens/[Mm]ore.dart'):
+              s = open(p, encoding='utf-8').read()
+              s = s.replace("'CURATED\nPROMPTS'", "'CURATED\\nPROMPTS'")
+              open(p, 'w', encoding='utf-8').write(s)
+          print('dart fixed ok')
+          PYEOF
+      - name: Fix Android config
+        run: |
+          cd "$GITHUB_WORKSPACE/prompt_maharaja"
+          printf 'org.gradle.jvmargs=-Xmx4G\nandroid.useAndroidX=true\nandroid.enableJetifier=true\n' > android/gradle.properties
+          sed -i 's/ndkVersion = flutter.ndkVersion/ndkVersion = "25.1.8937393"/' android/app/build.gradle || true
+          echo "config ok"
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 17
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.24.5
+          channel: stable
+          cache: true
+      - name: Get packages
+        run: |
+          cd "$GITHUB_WORKSPACE/prompt_maharaja"
+          flutter pub get
+      - name: Build release APK
+        run: |
+          cd "$GITHUB_WORKSPACE/prompt_maharaja"
+          flutter build apk --release
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: PromptMaharaja-APK-v5
+          path: prompt_maharaja/build/app/outputs/flutter-apk/app-release.apk
